@@ -4,7 +4,20 @@ data BTree a = Nil Int | Leaf Int [a] | Node Int [a] [BTree a] deriving Show
 
 a = (Leaf 3 [])
 b = (Node 3 [2,5] [Leaf 3 [1],Leaf 3 [3,4],Leaf 3 [10]])
- 
+c = (Node 3 [3,10] [Node 3 [1] [Leaf 3 [0],Leaf 3 [2]],Node 3 [5] [Leaf 3 [4],Leaf 3 [6]],Node 3 [21] [Leaf 3 [20],Leaf 3 [22]]])
+
+search (Leaf o []) elem = False
+search (Leaf o (x:xs)) elem
+ | elem == x = True
+ | elem < x = False
+ | elem > x = search (Leaf o xs) elem
+
+search (Node o [] (y:ys)) elem = search y elem
+search (Node o (x:xs) (y:ys)) elem
+ | elem == x = True
+ | elem < x = search y elem
+ | elem > x = search (Node o xs ys) elem
+
 insertOrdered a [] = [a]
 insertOrdered a bs'@(b:bs)
  | a <= b    = a : bs'
