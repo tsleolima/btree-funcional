@@ -21,14 +21,14 @@ insert' tree@(Leaf o chaves@(k:ks)) elem
  | elem < k  = Leaf o (elem:chaves)
  | elem > k  = Leaf o (insertOrdered elem chaves)
 
-insert' (Node o [] (t:ts)) elem = if isFull tree then insert' (split tree) elem
-                                  else Node o [] [(insert' t elem)]
+insert' (Node o [] (t:ts)) elem = if isFull tree then (split tree)
+                                  else Node o [] [tree]
                                   where tree = insert' t elem
 
 insert' node@(Node o chaves@(x:xs) (y:ys)) elem 
  | elem == x = node
- | elem < x = if isFull tree then insert' (Node o (mediana:x:xs) (left:right:ys)) elem
-              else (Node o chaves ((insert' y elem):ys))
+ | elem < x = if isFull tree then (Node o (mediana:x:xs) (left:right:ys))     
+              else (Node o chaves (tree:ys))
  | elem > x = Node o (x:novoXs) (y:novoYs)
  where Node _ [mediana] [left,right] = split tree
        Node _ novoXs novoYs = insert' (Node o xs ys) elem
