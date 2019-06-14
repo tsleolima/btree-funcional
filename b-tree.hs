@@ -2,37 +2,50 @@
 
 data BTree a = Nil Int | Leaf Int [a] | Node Int [a] [BTree a] deriving Show
 
-a = (Node 3 [30] [Leaf 3 [20],Leaf 3 [35,38,40]])
+a = (Leaf 3 [])
  
-search (Nil _) _ = False
-search (Leaf _ []) _ = False
-search (Leaf o (x:xs)) elem 
- | x == elem = True
- | x > elem  = False
- | otherwise = search (Leaf o xs) elem
+insertOrdered a [] = [a]
+insertOrdered a bs'@(b:bs)
+ | a <= b    = a : bs'
+ | otherwise = b : insertOrdered a bs
 
-search (Node _ [] []) elem = False
-search (Node _ [] (x:xs)) elem = search x elem
-search (Node o (x:xs) (y:ys)) elem 
- | x == elem = True
- | x > elem  = search y elem
- | otherwise = search (Node o xs ys) elem
+insert bt elem
+ | isFull tree = split tree
+ | otherwise = tree
+ where tree = insert' bt elem
 
-insert t x 
- | isFull t = insert (split t) x
- | otherwise = insert t x
+insert' (Leaf o []) elem = Leaf o [elem]
+insert' tree@(Leaf o chaves@(k:ks)) elem
+ | elem == k = tree
+ | elem < k  = Leaf o (elem:chaves)
+ | elem > k  = Leaf o (insertOrdered elem chaves)
 
-isFull (Nil m) = False
+insert' node@(Node o chaves@(x:xs) (y:ys)) elem 
+ | elem == x = node
+ | elem < x = if isFull y then (Node o (mediana:x:xs) [left,right,ys]) elem
+              else (Node o chaves (insert' y elem):ys)
+ | elem > x = Node o (x:novoXs) (y:novoYs)
+ where Node _ [mediana] [left,right] = split y
+       Node _ novoXs novoYs = insert' (Node o xs ys) elem
+
+split (Leaf o chaves) = (Node o [mediana] [Leaf o left, Leaf o right])
+ where left = leftHalf chaves
+       mediana:right = halfRight chaves
+
+split (Node o chaves trees) = Node o [mediana] [Node o c1 t1, Node o c2, t2]
+ where left = leftHalf chaves
+       mediana:right = halfRight chaves
+       t1 = leftHalf trees
+       t2 = halfRight trees
+
 isFull (Leaf _ []) = False
 isFull (Leaf o xs)
- | ((o -1) <= length xs) = True
+ | ((o -1) < length xs) = True
  | otherwise = False
 
 isFull (Node o xs _)
- | (o -1) <= length xs = True
+ | ((o -1) < length xs) = True
  | otherwise = False
 
-split (Node o xs ys) = (Node o xs [Leaf o leftHalf, Leaf o rigthHalf])
-
-leftHalf xs = take (ceiling ((length xs)/2))
-rigthHalf xs = drop (ceiling ((length xs/2))
+leftHalf xs = take ( div (length xs) 2 ) xs
+halfRight xs = drop ( div (length xs) 2 ) xs
