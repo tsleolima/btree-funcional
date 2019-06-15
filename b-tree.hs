@@ -58,13 +58,42 @@ split (Node o chaves trees) = Node o [mediana] [Node o left t1, Node o right t2]
        t2 = halfRight trees
 
 isFull (Leaf _ []) = False
-isFull (Leaf o xs)
- | ((o -1) < length xs) = True
- | otherwise = False
-
-isFull (Node o xs _)
- | ((o -1) < length xs) = True
- | otherwise = False
+isFull (Leaf o xs) = (o -1) < length xs
+isFull (Node o xs _) = (o -1) < length xs
 
 leftHalf xs = take ( div (length xs) 2 ) xs
 halfRight xs = drop ( div (length xs) 2 ) xs
+
+removeKey e xs = if (e `elem` xs) then removeKey' e xs else xs
+removeKey' e (x:xs)
+ | e == x = xs
+ | otherwise = x:(removeKey' e xs)
+
+--contrario do isFull
+isShort (Leaf _ []) = True
+isShort (Leaf o xs) = ((o-1) `div` 2) > length xs
+isShort (Node o xs _) = ((o-1) `div` 2) > length xs
+
+-- merge: junta as duas paginas de uma mesma chave k
+merge k (Leaf o keys1) (Leaf _ keys2) = Leaf o (keys1 ++ [k] ++ keys2)
+merge k (Node o keys1 t1) (Node _ keys2 t2) = Node o (keys1 ++ [k] ++ keys2) (t1 ++ t2)
+
+removeLeaf (Leaf o ks) x = Leaf o (removeKey x ks)
+
+remove l@(Leaf o ks) elem
+ | isShort leaf = error "Unimplemented"
+ | otherwise = leaf
+ where leaf = removeLeaf l elem
+ 
+remove (Node o [k] [t1, t2]) e
+ | e == k = error "Unimplemented"
+ | e < k = (Node o [k] [(remove t1 e), t2])
+ | e > k = (Node o [k] [t1, (remove t2 e)])
+
+remove (Node o (k:ks) (t:ts)) e
+ | e == k = error "Unimplemented"
+ | e < k = (Node o (k:ks) ((remove t e):ts))
+ | e > k = (Node o (k:newKs) (t:newTs))
+ where Node _ newKs newTs = remove (Node o ks ts) e
+
+ --TODO: Remover de um no; Remover de uma folha que ja tem o minimo de chaves.
