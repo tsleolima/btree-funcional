@@ -1,25 +1,44 @@
-const NKEYS = 2;
+const NKEYS = 3;
 
-function BTreeNode() {
-    this.keys = [10];
-    this.childs = [
-        { keys: [5], childs: []},
-        { keys: [20], childs: []}
-    ];
+function insereOrdenado(lista,valor) {
+
+    if(valor < head(lista) || lista.length == 0){
+        lista.unshift(valor); 
+        return lista;
+    }
+    if(valor > head(lista)){
+        return [head(lista)].concat(insereOrdenado(tail(lista),valor))
+    }
+}
+
+function head(list){
+    return list.filter(value => !(list.slice(1)).includes(value))[0]
+}
+
+function tail(list){        
+    return list.filter(value => (list.slice(1)).includes(value))
+}
+
+function BTreeNode(key,subtree) {
+    if(key && subtree){
+        this.keys = key;
+        this.childs = subtree;
+    } else if (key) {
+        this.keys = key;
+        this.childs = [];
+    } else {
+        this.keys = [];
+        this.childs = [];
+    }
+}
+
+function isLeaf(tree) {
+    return (tree.childs.length == 0);
 }
 
 function isFull(tree) {
-    console.log((NKEYS - 1) < tree.keys.length)
     return ((NKEYS - 1) < tree.keys.length);
 };
-
-function head(list){
-    return list.filter(value => !(list.slice(1)).includes(value))
-}
-
-function tail(list){
-    return list.filter(value => (list.slice(1)).includes(value))
-}
 
 function search(node,elem){
     if (node.keys.length == 0) {
@@ -33,18 +52,103 @@ function search(node,elem){
         v => v==true)
 }
 
-function insert(elem) {
-    var tree = this._insert(this,elem);
-    if (this.isFull(tree)) {
-        return this.split(tree);
-    } else {
+function insert(tree,elem) {    
+    var tree = _insert(tree,elem);
+    if (isFull(tree)) {   
+        return split(tree);
+    } else {       
         return tree;
     }
 }
 
-function _insert(elem) {
+function _insert(node,elem) {
+    if(isLeaf(node)){
+        if (elem == head(node.keys)){
+            return node;
+        }
+        node.keys = insereOrdenado(node.keys,elem);
+        return node;
+    } else {         
+        if (elem == head(node.keys)){
+            return node;
+        }
+        else if (elem < head(node.keys)){
+            var tree = _insert(head(node.childs),elem);
+            if(isFull(tree)){
+                var splited = split(tree);
+                var left = leftHalf(splited.childs);
+                var rigth = halfRigth(splited.childs);
+                var h = head(node.keys);
+                var t = tail(node.keys);
+                var ys = tail(node.childs);
+                node.keys = [splited.keys[0]].concat(h).concat(t)
+                node.childs = left.concat(rigth).concat(ys)
+                return node;
+            } else {
+                var ys = tail(node.childs);
+                node.childs = [tree].concat(ys)
+                return node;
+            }
+        } else {   
+            if (node.keys.length == 0) {
+                var tree = _insert(head(node.childs),elem);
+                if(isFull(tree)){
+                    return split(tree)
+                } else {
+                    var curr = new BTreeNode();
+                    curr.childs.push(tree);
+                    return curr;
+                }
+            }         
+            var noder = new BTreeNode();
+            var inNode = new BTreeNode();
+            inNode.keys = tail(node.keys);
+            inNode.childs = tail(node.childs);
+            var curr = _insert(inNode,elem);
+            var novaChave = curr.keys;
+            var novaTrees = curr.childs;
+            noder.keys = [head(node.keys)].concat(novaChave);
+            noder.childs = [head(node.childs)].concat(novaTrees);
+            return noder;
+        }
+    } 
+}
 
+function split(tree) {
+    var newBtree = new BTreeNode();
+    var left = leftHalf(tree.keys);
+    var rigth = halfRigth(tree.keys);
+    var mediana = head(rigth);
+    if (isLeaf(tree)) {
+        newBtree.keys.push(mediana);
+        newBtree.childs.push(new BTreeNode(left));
+        newBtree.childs.push(new BTreeNode(tail(rigth)));  
+        return newBtree;
+    } else {    
+        var leftTrees = leftHalf(tree.childs);
+        var rigthTrees = halfRigth(tree.childs);         
+        newBtree.keys.push(mediana);
+        newBtree.childs.push(new BTreeNode(left,leftTrees));
+        newBtree.childs.push(new BTreeNode(tail(rigth),rigthTrees));
+        return newBtree;
+    }
+}
+
+function leftHalf(lista) {
+    return lista.slice(0,(lista.length/2))
+}
+
+function halfRigth(lista) {
+    return lista.slice((lista.length/2))
 }
 
 var btree = new BTreeNode();
-console.log(search(btree,5))
+
+var a = insert(btree,10);
+var b = insert(a,5);
+var c = insert(b,20)
+var d = insert(c,40);
+var e = insert(d,2);
+var f = insert(e,3);
+var g = insert(f,50);
+console.log(g);
