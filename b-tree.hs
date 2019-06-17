@@ -1,6 +1,6 @@
 -- Ordem dada pelo valor do INT
 
-data BTree a = Nil Int | Leaf Int [a] | Node Int [a] [BTree a] deriving Show
+data BTree a = Leaf Int [a] | Node Int [a] [BTree a] deriving Show
 
 a = (Leaf 3 [])
 b = (Node 3 [2,5] [Leaf 3 [1],Leaf 3 [3,4],Leaf 3 [10]])
