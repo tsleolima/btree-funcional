@@ -1,6 +1,6 @@
 -- Ordem dada pelo valor do INT
 
-data BTree a = Nil Int | Leaf Int [a] | Node Int [a] [BTree a] deriving Show
+data BTree a = Leaf Int [a] | Node Int [a] [BTree a] deriving Show
 
 a = (Leaf 3 [])
 b = (Node 3 [2,5] [Leaf 3 [1],Leaf 3 [3,4],Leaf 3 [10]])
@@ -96,4 +96,63 @@ remove (Node o (k:ks) (t:ts)) e
  | e > k = (Node o (k:newKs) (t:newTs))
  where Node _ newKs newTs = remove (Node o ks ts) e
 
- --TODO: Remover de um no; Remover de uma folha que ja tem o minimo de chaves.
+predecessor (Leaf _ [x]) elem = if (elem > x) then x else error "ocorreu algum erro"
+predecessor (Leaf o (x1:x2:xs)) elem
+ | elem == x2 = x1
+ | elem < x1 = error "sem predecessor"
+ | elem > x1 = predecessor (Leaf o (x2:xs)) elem
+
+predecessor (Node o (x:xs) ((y@(Leaf _ (k:_))):ys)) elem
+ | elem == x = maxim y
+ | elem == k = error "nao foi possivel achar o predecessor"
+ | elem < x = predecessor y elem
+ | null xs = x
+ | elem > x = predecessor (Node o xs ys) elem
+
+predecessor (Node _ [] (y:_)) elem = predecessor y elem
+predecessor (Node o (x:xs) (y:ys)) elem
+ | elem == x = maxim y
+ | elem < x = predecessor y elem
+ | elem > x = predecessor (Node o xs ys) elem
+
+sucessor (Leaf _ [x]) elem = error "nenhum sucessor encontrado"
+sucessor (Leaf o (x1:x2:xs)) elem
+ | elem == x1 = x2
+ | elem > x1 = sucessor (Leaf o (x2:xs)) elem
+ | otherwise = error "sem sucessor"
+
+sucessor (Node o (x:xs) ((y1@(Leaf _ (k:_))):y2:ys)) elem
+ | elem == x = minim y2
+ | elem == k = x
+ | elem < x = predecessor y1 elem
+ | null xs = x
+ | elem > x = predecessor (Node o xs (y2:ys)) elem
+
+sucessor (Node o [x] [y1, y2]) elem
+ | elem == x = minim y2
+ | elem > x = sucessor y2 elem
+ | otherwise = error "algum erro aconteceu"
+
+sucessor (Node o (x1:x2:xs) (y1:y2:ys)) elem
+ | elem == x1 = minim y2
+ | elem > x1 && elem < x2 = sucessor y2 elem
+ | elem >= x2 = sucessor (Node o (x2:xs) (y2:ys)) elem
+ | elem < x1 = sucessor y1 elem
+
+-- retorna o filho esquerdo da chave k. OBS: o noh passado deve conter a chave k
+leftChild (Node o (x:xs) (y:ys)) k
+ | k == x = y
+ | null xs = error "chave nao encontrada"
+ | otherwise = leftChild (Node o xs ys) k
+
+-- retorna o filho direito da chave k. OBS: o noh passado deve conter a chave k
+rightChild (Node o (x:xs) (_:y2:ys)) k
+ | k == x = y2
+ | null xs = error "chave nao encontrada"
+ | otherwise = rightChild (Node o xs (y2:ys)) k
+
+maxim (Leaf _ keys) = last keys
+maxim (Node _ _ trees) = maxim (last trees)
+
+minim (Leaf _ keys) = head keys
+minim (Node _ _ trees) = minim (head trees)

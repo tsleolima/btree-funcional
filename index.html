@@ -1,105 +1,85 @@
 <!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8">
+<html lang="br">
 
-    <title>Collapsible Tree Example</title>
+<head>
+	<meta charset="utf-8">
 
-    <style>
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+		integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+	<link rel="stylesheet" href="style.css">
+	<title>Árvore B</title>
 
-	.node circle {
-	  fill: #fff;
-	  stroke: steelblue;
-	  stroke-width: 3px;
-	}
+</head>
 
-	.node text { font: 12px sans-serif; }
+<body ng-app="myapp" ng-controller="myCtrl">
 
-	.link {
-	  fill: none;
-	  stroke: #ccc;
-	  stroke-width: 2px;
-	}
-	
-    </style>
+	<div class="form-inline">
+		<div class="form-group mx-sm-3 mb-2">
+			<input type="text" ng-model="order" class="form-control" placeholder="ordem">
+		</div>
+		<button ng-click="setOrder(order)" class="btn btn-primary mb-2">Ordem</button>
 
-  </head>
+		<div class="form-group mx-sm-3 mb-2">
+			<input type="text" ng-model="valorInsert" class="form-control" placeholder="inserir">
+		</div>
+		<button ng-click="insert(valorInsert)" class="btn btn-primary mb-2">Inserir</button>
 
-  <body>
+		<div class="form-group mx-sm-3 mb-2">
+			<input type="text" ng-model="valorRemove" class="form-control" placeholder="remover">
+		</div>
+		<button ng-click="remove(valorRemove)" class="btn btn-primary mb-2">Remover</button>
 
-<!-- load the d3.js library -->	
-<script src="http://d3js.org/d3.v3.min.js"></script>
-<script src="b-tree.js"></script>
-<script>
+		<div class="form-group mx-sm-3 mb-2">
+			<input type="text" ng-model="valorSearch" class="form-control" placeholder="buscar">
+		</div>
+		<button ng-click="search(valorSearch)" class="btn btn-primary mb-2">Buscar</button>
+	</div>
 
-var treeData = toJSON(btree);
+	<div class="svg"></div>
 
-// ************** Generate the tree diagram	 *****************
-var margin = {top: 40, right: 120, bottom: 20, left: 120},
-	width = 960 - margin.right - margin.left,
-	height = 500 - margin.top - margin.bottom;
-	
-var i = 0;
+	<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+		integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+		crossorigin="anonymous"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+		integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
+		crossorigin="anonymous"></script>
+	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+		integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+		crossorigin="anonymous"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.7.8/angular.js"></script>
+	<!-- load the d3.js library -->
+	<script src="http://d3js.org/d3.v3.min.js"></script>
+	<script src="b-tree.js"></script>
+	<script>
+		var root;
+		var app = angular.module('myapp', []);
+		app.controller('myCtrl', function ($scope) {
 
-var tree = d3.layout.tree()
-	.size([height, width]);
 
-var diagonal = d3.svg.diagonal()
-	.projection(function(d) { return [d.x, d.y]; });
+			var btree;
+			$scope.setOrder = function (valor) {
+				btree = new BTreeNode();
+				NKEYS = valor;
+			}
 
-var svg = d3.select("body").append("svg")
-	.attr("width", width + margin.right + margin.left)
-	.attr("height", height + margin.top + margin.bottom)
-  .append("g")
-	.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+			$scope.insert = function (valor) {
+				btree = insert(btree, Number(valor));
+				root = toJSON(btree);
+				console.log(root);
+				update(root);
+			}
 
-root = treeData;
-  
-update(root);
+			$scope.remove = function (valor) {
+				NKEYS = valor;
+			}
 
-function update(source) {
+			$scope.search = function (valor) {
+				NKEYS = valor;
+			}
 
-  // Compute the new tree layout.
-  var nodes = tree.nodes(root).reverse(),
-	  links = tree.links(nodes);
+		});
+	</script>
+	<script src="visu-btree.js"></script>
+</body>
 
-  // Normalize for fixed-depth.
-  nodes.forEach(function(d) { d.y = d.depth * 100; });
-
-  // Declare the nodes…
-  var node = svg.selectAll("g.node")
-	  .data(nodes, function(d) { return d.id || (d.id = ++i); });
-
-  // Enter the nodes.
-  var nodeEnter = node.enter().append("g")
-	  .attr("class", "node")
-	  .attr("transform", function(d) { 
-		  return "translate(" + d.x + "," + d.y + ")"; });
-
-  nodeEnter.append("circle")
-	  .attr("r", 10)
-	  .style("fill", "#fff");
-
-  nodeEnter.append("text")
-	  .attr("y", function(d) { 
-		  return d.children || d._children ? -18 : 18; })
-	  .attr("dy", ".35em")
-	  .attr("text-anchor", "middle")
-	  .text(function(d) { return d.name; })
-	  .style("fill-opacity", 1);
-
-  // Declare the links…
-  var link = svg.selectAll("path.link")
-	  .data(links, function(d) { return d.target.id; });
-
-  // Enter the links.
-  link.enter().insert("path", "g")
-	  .attr("class", "link")
-	  .attr("d", diagonal);
-
-}
-
-</script>
-	
-  </body>
 </html>
