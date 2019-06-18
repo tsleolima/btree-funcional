@@ -172,7 +172,8 @@ function getParent(tree, no) {
 }
 
 function _getParent(tree, node) {
-    if(!isLeaf(tree) && tree.childs.some(no => no.keys === node.keys)) {
+    if(!isLeaf(tree) && tree.childs.some(no => no.keys
+            .some(key => node.keys.includes(key)))) {
         return tree;
     }
     return tree.childs.map(no => _getParent(no, node));
@@ -271,7 +272,17 @@ function predecessor(tree, elem) {
 }
 
 function remove(tree, key) {
-
+    const node = searchNodeByKey(tree, key);
+    if(isLeaf(node)) {
+        node.keys = node.keys.filter(k => k !== key);
+        if(node.keys.length < (NKEYS/2) - 1){
+            //tratar underflow
+            // fazer redistribuicao ou concatenacao
+        } 
+        return tree
+    } else {
+        // remover de um nó não folha
+    }
 }
 
 let btree = new BTreeNode();
@@ -326,4 +337,15 @@ console.log("Adjacente esquerdo");
 console.log(leftAdj(btree, searchNodeByKey(btree, 16)));
 console.log("Adjacente direito");
 console.log(rightAdj(btree, searchNodeByKey(btree, 16)));
+console.log("Remove de uma folha sem desbalancear");
+console.log("No folha antes da remocao:", searchNodeByKey(btree, 24));
+btree = remove(btree, 23);
+console.log("apos remocao", searchNodeByKey(btree, 24));
+console.log(getParent(btree, 24));
+console.log(getParent(btree, 20));
+console.log(getParent(btree, 14));
+console.log(getParent(btree, 10));
+
+
+
 
