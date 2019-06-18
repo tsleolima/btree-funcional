@@ -154,3 +154,176 @@ function toJSON(tree) {
     }
     return json;
 }
+
+/**
+ * Pega o parent de um nó
+ * @param {} tree 
+ * @param {*} key 
+ */
+function getParent(tree, no) {
+    const node = reduceArrays(_getParent(tree, searchNodeByKey(tree,
+        typeof no === 'number' ? no : head(no.keys))));
+    if(node instanceof Array) {
+        return node.filter(subtree => subtree instanceof BTreeNode).length > 0 ?
+            head(node.filter(subtree => subtree instanceof BTreeNode)) : null;
+    } else {
+       return node
+    }
+}
+
+function _getParent(tree, node) {
+    if(!isLeaf(tree) && tree.childs.some(no => no.keys === node.keys)) {
+        return tree;
+    }
+    return tree.childs.map(no => _getParent(no, node));
+}
+/**
+ * Pega o no adjacente a esquerda
+ */
+function leftAdj(tree, node) {
+    const parent = getParent(tree, node);
+    if(parent.childs.length > 1) { 
+        return parent.childs.indexOf(node) > 0 ?
+            parent.childs[parent.childs.indexOf(node) - 1] : null;
+    }
+}
+
+/**
+ * Pega o no adjacente a direita
+ */
+function rightAdj(tree, node) {
+    const parent = getParent(tree, node);
+    if(parent.childs.length > 1) { 
+        return parent.childs.indexOf(node) + 1 < parent.childs.length ?
+            parent.childs[parent.childs.indexOf(node) + 1] : null;
+    }
+}
+
+
+/**
+ * Reduz matriz a uma lista 
+ * @param {*} arrays 
+ */
+function reduceArrays(arrays) {
+    if(arrays instanceof BTreeNode) {
+        return arrays;
+    }
+    if(arrays && !arrays.some(elem => elem instanceof Array)) {
+        return arrays;
+    }
+    return reduceArrays(arrays.reduce((a,b) => {return a.concat(b)}, []));
+}
+
+function _toArray(tree, list) {
+    if(isLeaf(tree)) {
+        return list.concat(tree.keys);
+    } 
+    return tree.childs.map(child => _toArray(child, list.concat(tree.keys)));
+}
+
+/**
+ * Transforma a arvore em um array ordenado
+ * @param {} tree 
+ */
+function toArray(tree) {
+    return Array.from(new Set(reduceArrays(_toArray(tree, tree.keys))))
+            .sort((a, b) => a - b);
+}
+
+function _searchNodeByKey(tree, key) {
+    if(tree.keys.includes(key)) {
+        return tree;
+    } else if (!tree.keys.includes(key) && isLeaf(tree)) {
+        return;
+    }
+    return tree.childs.map(child => _searchNodeByKey(child, key));
+}
+
+/**
+ * Retorna a subtree que contem uma determinada Key como raíz
+ * @param {*} tree 
+ * @param {*} key 
+ */
+function searchNodeByKey(tree, key) {
+    const node = reduceArrays(_searchNodeByKey(tree, key));
+    if(node instanceof Array) {
+        return node.filter(subtree => subtree instanceof BTreeNode).length > 0 ?
+            head(node.filter(subtree => subtree instanceof BTreeNode)) : null;
+    } else {
+       return node
+    }
+}
+
+function sucessor(tree, elem) {
+    const order = toArray(tree);
+    if(order.indexOf(elem) + 1 < order.length) {
+        return order[order.indexOf(elem) + 1];
+    }
+    return null;
+}
+
+function predecessor(tree, elem) {
+    const order = toArray(tree);
+    if(order.indexOf(elem) > 0) {
+        return order[order.indexOf(elem) - 1];
+    }
+    return null;
+}
+
+function remove(tree, key) {
+
+}
+
+let btree = new BTreeNode();
+// FAZER OS INSERTS EXATAMENTE NESSA ORDEM LA NA VIEW
+// POIS SE FIZER DIFERENTE A ARVORE FINAL PODE SER DIFERENTE
+// E AS VERIFICACOES DOS CONSOLE.LOG PODE CONFUNDIR UM POUCO
+// (PASSEI UM BOM TEMPO TENTANDO ENTENDER PQ OS CONSOLE.LOG TAVA DIFERENTE DO QUE EU VIA NA ARVORE,
+// E NA REAL FOI PORQUE LA NA VIEW EU INSERI EM OUTRA ORDEM)
+btree = insert(btree, 8);
+btree = insert(btree, 6);
+btree = insert(btree, 1);
+btree = insert(btree, 2);
+btree = insert(btree, 3);
+btree = insert(btree, 4);
+btree = insert(btree, 13);
+btree = insert(btree, 10);
+btree = insert(btree, 5);
+btree = insert(btree, 7);
+btree = insert(btree, 9);
+btree = insert(btree, 11);
+btree = insert(btree, 12);
+btree = insert(btree, 14);
+btree = insert(btree, 15);
+btree = insert(btree, 16);
+btree = insert(btree, 17);
+btree = insert(btree, 18);
+btree = insert(btree, 19);
+btree = insert(btree, 20);
+btree = insert(btree, 21);
+btree = insert(btree, 22);
+btree = insert(btree, 23);
+btree = insert(btree, 24);
+
+//teste
+function imprime(tree) {
+    if(!isLeaf(tree)) {
+        console.log(tree);
+        tree.childs.map(e => imprime(e));
+    }
+    console.log(tree);
+}
+
+console.log("No inteiro");
+console.log(searchNodeByKey(btree, 16));
+console.log("sucessor");
+console.log(sucessor(btree, 16));
+console.log("predecessor");
+console.log(predecessor(btree, 16)); 
+console.log("Pai de um no");
+console.log(getParent(btree, 16));
+console.log("Adjacente esquerdo");
+console.log(leftAdj(btree, searchNodeByKey(btree, 16)));
+console.log("Adjacente direito");
+console.log(rightAdj(btree, searchNodeByKey(btree, 16)));
+
