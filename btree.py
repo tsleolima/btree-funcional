@@ -1,3 +1,10 @@
+# Author: Clara Moraes
+# Date: 13/06/2019
+
+# As implementações foram feitas beseadas no livro Introduction to Algorithms
+# de Thomas Cormen, Charles Leiserson, Ronald Rivest e Clifford Stein. Cap.
+# 18, B-trees.
+
 class BTreeNode(object):
 	def __init__(self, is_leaf=False):
 		self.is_leaf = is_leaf
@@ -22,9 +29,19 @@ class BTree(object):
 		for value in values:
 			operation(value)
 
+
+	def search(self, target, initial_node=None):
+		"""
+			Procura um valor na árvore.
+
+			target: valor a ser procurado.
+			initial_node: 
+		"""
+
 	def insert(self, value):
 		"""
 			Insere um novo valor (chave) na árvore.
+			Assumimos que o usuário irá sempre usar uma função válida como parâmetro.
 
 			value: valor da chave.
 		"""
@@ -32,7 +49,7 @@ class BTree(object):
 		root = self.root
 		# O nó está na capacidade máxima, e precisa fazer o split
 		# para que as propriedades da b-tree continuem válidas.
-		if len(root.keys) + 1 >= 2 * self.min_degree - 1:
+		if len(root.keys) == 2 * self.min_degree - 2:
 			new_node = BTreeNode()
 			self.root = new_node
 			new_node.children.insert(0, root)
@@ -65,10 +82,10 @@ class BTree(object):
 			child_index = len(list(filter(lambda x: x < value, node.keys)))
 
 			# Se a capacidade máxima do nó foi atingida, é preciso fazer o split.
-			if len(node.children[child_index].keys) + 1 >= 2 * self.min_degree - 1:
+			if len(node.children[child_index].keys) == 2 * self.min_degree - 2:
 				self._split(node, child_index)
 
-				if value > node.children[child_index].keys[-1]:
+				if value > node.keys[child_index]:
 					child_index += 1
 
 			self._insert_not_full(node.children[child_index], value)
@@ -89,15 +106,19 @@ class BTree(object):
 		node.children.insert(index_split + 1, new_right)
 		node.keys.insert(index_split, new_left.keys[self.min_degree - 1])
 
-		new_right.keys = new_left.keys[self.min_degree:(2 * self.min_degree)]
+		new_right.keys = new_left.keys[self.min_degree:]
 		new_left.keys = new_left.keys[:self.min_degree - 1]
 
 		# Se o nó não for folha, então devemos definir seus filhos da esquerda e direita
 		# após a quebra.
 		if not new_left.is_leaf:
-			new_right.children = new_left.children[self.min_degree:2 * self.min_degree]
-			new_left.children = new_left.children[0:self.min_degree]
+			new_right.children = new_left.children[self.min_degree:]
+			new_left.children = new_left.children[:self.min_degree]
 
+	# def search(self, value):
+
+
+	# def remove(self, value):
 
 	def print_tree(self):
 		"""
@@ -121,24 +142,20 @@ class BTree(object):
 			for child in node.children:
 				self._print_tree(child)
 
-#fazer método insert com lista de valores. usar map
 
-tree = BTree(2)
+tree = BTree(3)
 
-tree.operation_values(tree.insert, [8, 56, 30])
-# tree.insert(8)
-# tree.print_tree()
-# tree.insert(56)
-# tree.print_tree()
-# tree.insert(30)
-# tree.insert(57)
-# tree.insert(58)
-# tree.insert(60)
-# tree.insert(55)
-# tree.insert(59)
-# tree.insert(61)
-# tree.insert(10)
-# tree.print_tree()
-# tree.insert(10)
-# tree.insert(17)
+# tree.operation_values(tree.insert, [8, 56, 30])
+tree.insert(8)
+tree.insert(56)
+tree.insert(30)
+tree.insert(57)
+tree.insert(58)
+tree.insert(60)
+tree.insert(55)
+tree.insert(59)
+tree.insert(61)
+tree.insert(10)
+tree.insert(10)
+tree.insert(17)
 tree.print_tree()
