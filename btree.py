@@ -5,6 +5,9 @@
 # de Thomas Cormen, Charles Leiserson, Ronald Rivest e Clifford Stein. Cap.
 # 18, B-trees.
 
+# Conceitos de programação funcional utilizados: funções lambda, funções de alta
+# ordem, filter
+
 class BTreeNode(object):
 	def __init__(self, is_leaf=False):
 		self.is_leaf = is_leaf
@@ -35,8 +38,31 @@ class BTree(object):
 			Procura um valor na árvore.
 
 			target: valor a ser procurado.
-			initial_node: 
+			initial_node: nó por onde a busca deve iniciar. O default valor default
+			é a raiz da árvore.
 		"""
+		if isinstance(initial_node, BTreeNode):
+			# Filtra todos os elementos menores que target. Como uma das propriedades da árvore B
+			# é que as chaves estão ordenadas em ordem crescente, então o tamanho do array após o
+			# filtro, será a posição do target.
+			target_index = len(list(filter(lambda x: x < target, initial_node.keys)))
+
+			if target_index < len(initial_node.keys) and target == initial_node.keys[target_index]:
+				# Apenas para conferência de valores.
+				print(initial_node, initial_node.keys[target_index])
+
+				return initial_node
+
+			elif initial_node.is_leaf:
+				print("Not Found")
+
+				return None
+
+			else:
+				return self.search(target, initial_node.children[target_index])
+
+		else:
+			self.search(target, self.root)
 
 	def insert(self, value):
 		"""
@@ -115,18 +141,13 @@ class BTree(object):
 			new_right.children = new_left.children[self.min_degree:]
 			new_left.children = new_left.children[:self.min_degree]
 
-	# def search(self, value):
-
-
-	# def remove(self, value):
-
-	def print_tree(self):
+	def preorder(self):
 		"""
 			Imprime as chaves de cada nó da árvore.
 		"""
-		self._print_tree(self.root)
+		self._preorder(self.root)
 
-	def _print_tree(self, node):
+	def _preorder(self, node):
 		"""
 			Imprime as chaves de cada nó da árvore recursivamente, na sequência: raiz,
 			esquerda, direita.
@@ -140,12 +161,30 @@ class BTree(object):
 			print(node.keys)
 
 			for child in node.children:
-				self._print_tree(child)
+				self._preorder(child)
+
+	def inorder(self):
+		"""
+			Retorna uma lista com os valores ordenados das chaves presentes na árvore B.
+		"""
+
+		self._inorder(self.root, [])
+
+	def _inorder(self, node, values):
+		if node is not None:
+
+
+	def get_all_values_less_than(self, k):
+		"""
+			Retorna todos os valores menores que k, ordenados em ordem crescente.
+
+			k: upper bound dos valores.
+		"""
+		return [x for x in self.inorder() if x < k]
 
 
 tree = BTree(3)
 
-# tree.operation_values(tree.insert, [8, 56, 30])
 tree.insert(8)
 tree.insert(56)
 tree.insert(30)
@@ -156,6 +195,15 @@ tree.insert(55)
 tree.insert(59)
 tree.insert(61)
 tree.insert(10)
-tree.insert(10)
 tree.insert(17)
-tree.print_tree()
+tree.preorder()
+
+tree.search(8, tree.root)
+tree.search(61)
+tree.search(90)  				# Esperado: Not Found
+print(tree.get_all_values_less_than(40))
+
+tree2 = BTree(3)
+tree2.operation_values(tree2.insert, [8, 56, 30, 57, 58, 60])
+tree2.preorder()
+tree2.operation_values(tree2.search, [8, 58, 30, 900]) # Esperado: [8, 58, 30, Not Found]
