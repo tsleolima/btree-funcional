@@ -21,7 +21,7 @@ class BTree(object):
 		root = self.root
 		# O nó está na capacidade máxima, e precisa fazer o split
 		# para que as propriedades da b-tree continuem válidas.
-		if len(root.children) == 2 * self.min_degree - 1:
+		if len(root.keys) == 2 * self.min_degree - 1:
 			new_node = BTreeNode()
 			self.root = new_node
 			new_node.children.insert(0, root)
@@ -51,13 +51,13 @@ class BTree(object):
 		# Se o nó não for folha, devemos descer na árvore para procurar a folha
 		# em que o novo valor pode ser inserido.
 		else:
-			child_index = len(list(filter(lambda x: x < value, node.keys)))
+			child_index = len(list(filter(lambda x: x > value, node.keys))) + 1
 
 			# Se a capacidade máxima do nó foi atingida, é preciso fazer o split.
-			if len(node.children[child_index].keys) == 2 * self.min_degree + 1:
+			if len(node.children[child_index].keys) == 2 * self.min_degree - 1:
 				self._split(node, child_index)
 
-				if value > node.children[child_index]:
+				if value > node.children[child_index].keys[-1]:
 					child_index += 1
 
 			self._insert_not_full(node.children[child_index], value)
@@ -73,19 +73,46 @@ class BTree(object):
 			index_split: index de onde deve-se fazer a quebra do nó.
 		"""
 		new_subroot = node.children[index_split]
-		new_node = BTreeNode(leaf=new_subroot.is_leaf)
+		new_node = BTreeNode(is_leaf=new_subroot.is_leaf)
 
 		node.children.insert(index_split + 1, new_node)
 		node.keys.insert(index_split, new_subroot.keys[self.min_degree - 1])
 
-		new_node.keys = new_subroot.keys[self.min_degree:(2 * self.min_degree - 1)]
-		new_subroot = new_subroot.keys[0:(self.min_degree - 1)]
+		new_node.keys = new_subroot.keys[self.min_degree:(2 * self.min_degree)]
+		new_subroot.keys = new_subroot.keys[:self.min_degree - 1]
 
 		# Se o nó não for folha, então devemos definir seus filhos da esquerda e direita
 		# após a quebra.
 		if not new_subroot.is_leaf:
-			new_node.children = new_subroot[self.min_degree:2 * self.min_degree]
-			new_subroot = new_subroot[0:self.min_degree - 1]
+			new_node.children = new_subroot.children[self.min_degree:2 * self.min_degree]
+			new_subroot.children = new_subroot.children[0:self.min_degree - 1]
 
 
+	def print_tree(self):
+		self._print_tree(self.root)
 
+	def _print_tree(self, node):
+		if node.is_leaf:
+			print(node.keys)
+
+		else:
+			print(node.keys)
+
+			for child in node.children:
+				self._print_tree(child)
+
+#fazer método insert com lista de valores. usar map
+
+tree = BTree(2)
+tree.insert(8)
+# tree.print_tree()
+tree.insert(56)
+# tree.print_tree()
+tree.insert(30)
+tree.insert(57)
+tree.insert(58)
+tree.insert(60)
+# tree.print_tree()
+# tree.insert(10)
+# tree.insert(17)
+tree.print_tree()
