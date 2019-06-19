@@ -275,27 +275,139 @@ function isShort(node) {
     return ((NKEYS - 1) / 2 >= node.keys.length);
 }
 
-function remove(tree, key) {
+function redistribuicao (left,right,node,parent,key) {
+    if (left != null && right != null){
+        if(left.keys.length > right.keys.length){
+            let indexPrimeiroMenor = parent.keys.reverse().findIndex(k => k < key);
+            let primeiroMenor = parent.keys[indexPrimeiroMenor];
+
+            let nodeAux = new BTreeNode();
+            node.keys = node.keys.filter(k => k !== key);
+            nodeAux.keys = left.keys.concat(primeiroMenor).concat(node.keys);
+            let splited = split(nodeAux);
+
+            indice = parent.keys.indexOf(primeiroMenor);
+            indiceL = parent.childs.indexOf(left);
+            indiceR = parent.childs.indexOf(node);
+            parent.keys[indice] = splited.keys[0];                                
+
+            parent.childs[indiceL] = splited.childs[0];
+            parent.childs[indiceR] = splited.childs[1];
+            
+        } else {
+            
+            let indexPrimeiroMaior = parent.keys.findIndex(k => k > key);
+            let primeiroMaior = parent.keys[indexPrimeiroMaior];
+
+            let nodeAux = new BTreeNode();
+            node.keys = node.keys.filter(k => k !== key);
+            nodeAux.keys = node.keys.concat(primeiroMaior).concat(right.keys);
+            let splited = split(nodeAux);
+
+            indice = parent.keys.indexOf(primeiroMaior);
+            indiceL = parent.childs.indexOf(node);
+            indiceR = parent.childs.indexOf(right);
+            parent.keys[indice] = splited.keys[0];                                
+
+            parent.childs[indiceL] = splited.childs[0];
+            parent.childs[indiceR] = splited.childs[1];
+            
+        }
+    } else if (left != null) {
+        let indexPrimeiroMenor = parent.keys.reverse().findIndex(k => k < key);
+        let primeiroMenor = parent.keys[indexPrimeiroMenor];
+
+        let nodeAux = new BTreeNode();
+        node.keys = node.keys.filter(k => k !== key);
+        nodeAux.keys = left.keys.concat(primeiroMenor).concat(node.keys);
+        let splited = split(nodeAux);
+
+        indice = parent.keys.indexOf(primeiroMenor);
+        indiceL = parent.childs.indexOf(left);
+        indiceR = parent.childs.indexOf(node);
+        parent.keys[indice] = splited.keys[0];                                
+
+        parent.childs[indiceL] = splited.childs[0];
+        parent.childs[indiceR] = splited.childs[1];
+    } else {                    
+                        
+        let indexPrimeiroMaior = parent.keys.findIndex(k => k > key);
+        let primeiroMaior = parent.keys[indexPrimeiroMaior];
+
+        let nodeAux = new BTreeNode();
+        node.keys = node.keys.filter(k => k !== key);
+        nodeAux.keys = node.keys.concat(primeiroMaior).concat(right.keys);
+        let splited = split(nodeAux);
+
+        indice = parent.keys.indexOf(primeiroMaior);
+        indiceL = parent.childs.indexOf(node);
+        indiceR = parent.childs.indexOf(right);
+        parent.keys[indice] = splited.keys[0];                                
+
+        parent.childs[indiceL] = splited.childs[0];
+        parent.childs[indiceR] = splited.childs[1];
+        
+    }
+}
+
+function remove(tree, key) {    
     const node = searchNodeByKey(tree, key);
     const y = predecessor(tree, key);
     const z = sucessor(tree, key);
     const left = leftAdj(tree, node);
     const right = rightAdj(tree, node);
-    let parent = getParent(tree,node);    
+    let parent = getParent(tree,node);         
     if (isLeaf(node)) {        
         if (!isShort(node)) {            
             node.keys = node.keys.filter(k => k !== key);
         }
-        // aqui faz concatenação                
+        else if (left != null && right != null && (!isShort(left) || !isShort(right))) {
+            redistribuicao(left,right,node,parent,key);
+        }
+        // aqui faz concatenação             
         else if (left != null && isShort(left)) {
             let indexPrimeiroMenor = parent.keys.reverse().findIndex(k => k < key);
             let primeiroMenor = parent.keys[indexPrimeiroMenor];
             
             node.keys = node.keys.filter(k => k !== key);
+            left.keys = left.keys.concat(primeiroMenor).concat(node.keys);      
+            let result = parent.childs.filter(child => child.keys.length > 0);      
+            parent.childs = result.length > 0 ? result : parent.childs.slice(0,parent.childs.length-1);            
+            // parent.keys = parent.keys.reverse().filter(k => k !== primeiroMenor);            
+            remove(tree,primeiroMenor);
+            
+        } else if (right != null && isShort(right)) {
+        
+            let indexPrimeiroMaior = parent.keys.findIndex(k => k > key);
+            let primeiroMaior = parent.keys[indexPrimeiroMaior];
+
+            node.keys = node.keys.filter(k => k !== key);
+            right.keys = node.keys.concat(primeiroMaior).concat(right.keys);            
+            let result = parent.childs.filter(child => child.keys.length > 0);      
+            parent.childs = result.length > 0 ? result : parent.childs.slice(1,parent.childs.length-1);                
+            //parent.keys = parent.keys.filter(k => k !== primeiroMaior);               
+            remove(tree,primeiroMaior);
+        } // aqui faz redistribuicao
+        else {
+
+            redistribuicao(left,right,node,parent,key);
+        }
+    } else {
+        // remover de um nó não folha
+        if (!isShort(node)) {                        
+            node.keys = node.keys.filter(k => k !== key);
+        }
+        else if (left != null && isShort(left)) {
+
+            let indexPrimeiroMenor = parent.keys.reverse().findIndex(k => k < key);
+            let primeiroMenor = parent.keys[indexPrimeiroMenor];
+            
+            node.keys = node.keys.filter(k => k !== key);
             left.keys = left.keys.concat(primeiroMenor).concat(node.keys);
-            parent.childs = parent.childs.filter(child => child.keys.length > 0);
-            parent.childs = parent.childs.slice(0,parent.childs.length-1);            
+            let result = parent.childs.filter(child => child.keys.length > 0);      
+            parent.childs = result.length > 0 ? result : parent.childs.slice(0,parent.childs.length-1);            
             parent.keys = parent.keys.reverse().filter(k => k !== primeiroMenor);
+            remove(tree,primeiroMenor);
             
         } else if (right != null && isShort(right)) {
         
@@ -304,88 +416,56 @@ function remove(tree, key) {
 
             node.keys = node.keys.filter(k => k !== key);
             right.keys = node.keys.concat(primeiroMaior).concat(right.keys);
-            parent.childs = parent.childs.filter(child => child.keys.length > 0);
-            parent.childs = parent.childs.slice(1);            
+            let result = parent.childs.filter(child => child.keys.length > 0);      
+            parent.childs = result.length > 0 ? result : parent.childs.slice(1,parent.childs.length-1);             
             parent.keys = parent.keys.filter(k => k !== primeiroMaior);    
-        } // aqui faz redistribuicao
-        else {
+            remove(tree,primeiroMaior);
 
-            if (left != null && right != null){
-                if(left.keys.length > right.keys.length){
-                    let indexPrimeiroMenor = parent.keys.reverse().findIndex(k => k < key);
-                    let primeiroMenor = parent.keys[indexPrimeiroMenor];
+        } else if (left != null) {
+            let indexPrimeiroMenor = parent.keys.findIndex(k => k < key);
+            let primeiroMenor = parent.keys[indexPrimeiroMenor];
+            
+            let nodeAux = new BTreeNode();
 
-                    let nodeAux = new BTreeNode();
-                    node.keys = node.keys.filter(k => k !== key);
-                    nodeAux.keys = left.keys.concat(primeiroMenor).concat(node.keys);
-                    let splited = split(nodeAux);
+            node.keys = node.keys.filter(k => k !== key);
+            nodeAux.childs = left.childs.concat(node.childs);
 
-                    indice = parent.keys.indexOf(primeiroMenor);
-                    indiceL = parent.childs.indexOf(left);
-                    indiceR = parent.childs.indexOf(node);
-                    parent.keys[indice] = splited.keys[0];                                
-    
-                    parent.childs[indiceL] = splited.childs[0];
-                    parent.childs[indiceR] = splited.childs[1];
-                    
-                } else {
-                    
-                    let indexPrimeiroMaior = parent.keys.findIndex(k => k > key);
-                    let primeiroMaior = parent.keys[indexPrimeiroMaior];
-    
-                    let nodeAux = new BTreeNode();
-                    node.keys = node.keys.filter(k => k !== key);
-                    nodeAux.keys = node.keys.concat(primeiroMaior).concat(right.keys);
-                    let splited = split(nodeAux);
-    
-                    indice = parent.keys.indexOf(primeiroMaior);
-                    indiceL = parent.childs.indexOf(node);
-                    indiceR = parent.childs.indexOf(right);
-                    parent.keys[indice] = splited.keys[0];                                
-    
-                    parent.childs[indiceL] = splited.childs[0];
-                    parent.childs[indiceR] = splited.childs[1];
-                    
-                }
-            } else if (left != null) {
-                let indexPrimeiroMenor = parent.keys.reverse().findIndex(k => k < key);
-                let primeiroMenor = parent.keys[indexPrimeiroMenor];
+            nodeAux.keys = left.keys.concat(primeiroMenor).concat(node.keys);
+            let splited = split(nodeAux);
+            
+            splited.childs[0].childs = nodeAux.childs.filter(child => child.keys[0] < splited.keys[0]);
+            splited.childs[1].childs = nodeAux.childs.filter(child => child.keys[0] > splited.keys[0]);
 
-                let nodeAux = new BTreeNode();
-                node.keys = node.keys.filter(k => k !== key);
-                nodeAux.keys = left.keys.concat(primeiroMenor).concat(node.keys);
-                let splited = split(nodeAux);
+            indice = parent.keys.indexOf(primeiroMenor);
+            indiceL = parent.childs.indexOf(left);
+            indiceR = parent.childs.indexOf(node);
+            parent.keys[indice] = splited.keys[0];                                
 
-                indice = parent.keys.indexOf(primeiroMenor);
-                indiceL = parent.childs.indexOf(left);
-                indiceR = parent.childs.indexOf(node);
-                parent.keys[indice] = splited.keys[0];                                
+            parent.childs[indiceL] = splited.childs[0];
+            parent.childs[indiceR] = splited.childs[1]; 
+        } else {                                
+            let indexPrimeiroMaior = parent.keys.findIndex(k => k > key);
+            let primeiroMaior = parent.keys[indexPrimeiroMaior];
+            
+            let nodeAux = new BTreeNode();
 
-                parent.childs[indiceL] = splited.childs[0];
-                parent.childs[indiceR] = splited.childs[1];
-            } else {                    
-                                
-                let indexPrimeiroMaior = parent.keys.findIndex(k => k > key);
-                let primeiroMaior = parent.keys[indexPrimeiroMaior];
+            node.keys = node.keys.filter(k => k !== key);
+            nodeAux.childs = node.childs.concat(right.childs);
 
-                let nodeAux = new BTreeNode();
-                node.keys = node.keys.filter(k => k !== key);
-                nodeAux.keys = node.keys.concat(primeiroMaior).concat(right.keys);
-                let splited = split(nodeAux);
+            nodeAux.keys = node.keys.concat(primeiroMaior).concat(right.keys);
+            let splited = split(nodeAux);
 
-                indice = parent.keys.indexOf(primeiroMaior);
-                indiceL = parent.childs.indexOf(node);
-                indiceR = parent.childs.indexOf(right);
-                parent.keys[indice] = splited.keys[0];                                
+            splited.childs[0].childs = nodeAux.childs.filter(child => child.keys[0] < splited.keys[0]);
+            splited.childs[1].childs = nodeAux.childs.filter(child => child.keys[0] > splited.keys[0]);
 
-                parent.childs[indiceL] = splited.childs[0];
-                parent.childs[indiceR] = splited.childs[1];
-                
-            }
+            indice = parent.keys.indexOf(primeiroMaior);
+            indiceL = parent.childs.indexOf(node);
+            indiceR = parent.childs.indexOf(right);
+            parent.keys[indice] = splited.keys[0];                                
+
+            parent.childs[indiceL] = splited.childs[0];
+            parent.childs[indiceR] = splited.childs[1];            
         }
-
-    } else {
-        // remover de um nó não folha
     }
     
     return tree;

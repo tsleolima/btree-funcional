@@ -47,6 +47,7 @@
 		integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
 		crossorigin="anonymous"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.7.8/angular.js"></script>
+	<script scr="https://cdn.jsdelivr.net/npm/lodash@4.17.10/lodash.min.js"></script>
 	<!-- load the d3.js library -->
 	<script src="http://d3js.org/d3.v3.min.js"></script>
 	<script src="b-tree.js"></script>
@@ -63,7 +64,7 @@
 			}
 
 btree = new BTreeNode();
-NKEYS = 5;
+NKEYS = 3;
 btree = insert(btree, 8);
 btree = insert(btree, 6);
 btree = insert(btree, 1);
@@ -84,10 +85,10 @@ btree = insert(btree, 18);
 btree = insert(btree, 19);
 btree = insert(btree, 20);
 btree = insert(btree, 21);
-btree = insert(btree, 22);
-btree = insert(btree, 23);
-btree = insert(btree, 24);
-btree = insert(btree, 25);
+btree = insert(btree, -1);
+// btree = insert(btree, -2);
+// btree = insert(btree, 24);
+// btree = insert(btree, 25);
 btree = insert(btree, 0);
 root = toJSON(btree);
 update(root);
