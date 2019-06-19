@@ -70,10 +70,6 @@ public class BTreeTest {
 		assertEquals(2, tree1.height());
 		printTree(tree1);
 
-		for (int i = 0; i < 4332; i++) {
-			tree1.insert(null);
-		}
-
 	}
 
 	@Test
