@@ -62,15 +62,46 @@
 				NKEYS = valor;
 			}
 
-			$scope.insert = function (valor) {
-				btree = insert(btree, Number(valor));
-				root = toJSON(btree);
-				console.log(root);
-				update(root);
-			}
+btree = new BTreeNode();
+NKEYS = 5;
+btree = insert(btree, 8);
+btree = insert(btree, 6);
+btree = insert(btree, 1);
+btree = insert(btree, 2);
+btree = insert(btree, 3);
+btree = insert(btree, 4);
+btree = insert(btree, 13);
+btree = insert(btree, 10);
+btree = insert(btree, 7);
+btree = insert(btree, 9);
+btree = insert(btree, 11);
+btree = insert(btree, 12);
+btree = insert(btree, 14);
+btree = insert(btree, 15);
+btree = insert(btree, 16);
+btree = insert(btree, 17);
+btree = insert(btree, 18);
+btree = insert(btree, 19);
+btree = insert(btree, 20);
+btree = insert(btree, 21);
+btree = insert(btree, 22);
+btree = insert(btree, 23);
+btree = insert(btree, 24);
+btree = insert(btree, 25);
+btree = insert(btree, 0);
+root = toJSON(btree);
+update(root);
+			// $scope.insert = function (valor) {
+			// 	btree = insert(btree, Number(valor));
+			// 	root = toJSON(btree);
+			// 	console.log(root);
+			// 	update(root);
+			// }
 
 			$scope.remove = function (valor) {
-				NKEYS = valor;
+				btree = remove(btree, Number(valor));
+				root = toJSON(btree);
+				update(root)
 			}
 
 			$scope.search = function (valor) {
