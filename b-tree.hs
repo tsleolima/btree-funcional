@@ -156,3 +156,18 @@ maxim (Node _ _ trees) = maxim (last trees)
 
 minim (Leaf _ keys) = head keys
 minim (Node _ _ trees) = minim (head trees)
+
+inOrder :: BTree a -> [a]
+inOrder (Leaf _ xs) = xs
+inOrder (Node _ [x] [y1,y2]) = (inOrder y1) ++ [x] ++ inOrder y2
+inOrder (Node o (x:xs) (y:ys)) = (inOrder y) ++ [x] ++ inOrder (Node o xs ys)
+
+preOrder :: Btree a -> [a]
+preOrder (Leaf _ xs)= xs
+preOrder (Node _ [x] [y1,y2]) = [x] ++ (preOrder y1) ++ preOrder y2
+preOrder (Node o (x:xs) (y:ys)) = [x] ++ (preOrder y) ++ preOrder (Node o xs ys)
+
+postOrder :: Btree a -> [a]
+postOrder (Leaf _ xs)= xs
+postOrder (Node _ [x] [y1,y2]) = (postOrder y1) ++ (postOrder y2) ++ [x]
+postOrder (Node o (x:xs) (y:ys)) = (postOrder y) ++ (postOrder (Node o xs ys)) ++ [x] 
