@@ -76,13 +76,6 @@ public class BTree<T extends Comparable<T>> {
 			}
 			return search(searchNode(node, element, 0), element);
 			
-			/*
-			for (BNode<T> n : node.getChildren()) {
-				boolean aux = search(n, element);
-				if (aux) {
-					return true;
-				}
-			}*/
 		}
 	}
 	
