@@ -1,4 +1,4 @@
-##Árvore B
+**Árvore B**
 Nesse projeto buscamos codificar o algorítmo da btree utilizando features do paradigma funcional
 das linguagens abaixo:
 * Haskell
@@ -6,7 +6,7 @@ das linguagens abaixo:
 * JavaScript
 * Java
 
-##Integrantes:
+**Integrantes:**
 * Leonardo Lima
 * Filipe Gomes
 * Tiago Pereira
