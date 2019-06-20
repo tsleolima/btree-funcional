@@ -30,6 +30,7 @@ function BTreeNode(key, subtree) {
         this.keys = [];
         this.childs = [];
     }
+    this.draw = false; // atributo para pintar o no caso seja buscado
 }
 
 function isLeaf(tree) {
@@ -50,6 +51,14 @@ function search(node, elem) {
 
     return node.childs.map(v => search(v, elem)).some(
         v => v == true)
+}
+
+function insereNoPintado (node,elem) {    
+    if (node.keys.includes(elem)){        
+        node.draw = true;
+    } 
+    node.childs.map(v => insereNoPintado(v,elem));
+    return node;
 }
 
 function insert(tree, elem) {
@@ -146,6 +155,7 @@ function halfRigth(lista) {
 function toJSON(tree) {
     var json = {};
     json.name = tree.keys.toString();
+    json.draw = tree.draw;
     if (!isLeaf(tree)) {
         json.children = [];
         tree.childs.forEach(function (child) {
@@ -373,7 +383,8 @@ function remove(tree, key) {
             left.keys = left.keys.concat(primeiroMenor).concat(node.keys);      
             let result = parent.childs.filter(child => child.keys.length > 0);      
             parent.childs = result.length > 0 ? result : parent.childs.slice(0,parent.childs.length-1);            
-            // parent.keys = parent.keys.reverse().filter(k => k !== primeiroMenor);            
+            // parent.keys = parent.keys.reverse().filter(k => k !== primeiroMenor); 
+                       
             remove(tree,primeiroMenor);
             
         } else if (right != null && isShort(right)) {
@@ -385,7 +396,8 @@ function remove(tree, key) {
             right.keys = node.keys.concat(primeiroMaior).concat(right.keys);            
             let result = parent.childs.filter(child => child.keys.length > 0);      
             parent.childs = result.length > 0 ? result : parent.childs.slice(1,parent.childs.length-1);                
-            //parent.keys = parent.keys.filter(k => k !== primeiroMaior);               
+            //parent.keys = parent.keys.filter(k => k !== primeiroMaior);
+            
             remove(tree,primeiroMaior);
         } // aqui faz redistribuicao
         else {
@@ -393,10 +405,15 @@ function remove(tree, key) {
             redistribuicao(left,right,node,parent,key);
         }
     } else {
-        // remover de um nó não folha
+        // remover de um nó não folha        
+        if(left == null && right == null){
+            if(node.keys.length == 0){                
+                node.keys = node.childs.filter(k => k.keys);
+            }
+        }
         if (!isShort(node)) {                        
             node.keys = node.keys.filter(k => k !== key);
-        }
+        }        
         else if (left != null && isShort(left)) {
 
             let indexPrimeiroMenor = parent.keys.reverse().findIndex(k => k < key);
@@ -407,6 +424,7 @@ function remove(tree, key) {
             let result = parent.childs.filter(child => child.keys.length > 0);      
             parent.childs = result.length > 0 ? result : parent.childs.slice(0,parent.childs.length-1);            
             parent.keys = parent.keys.reverse().filter(k => k !== primeiroMenor);
+
             remove(tree,primeiroMenor);
             
         } else if (right != null && isShort(right)) {
@@ -471,37 +489,6 @@ function remove(tree, key) {
     return tree;
 }
 
-let btree = new BTreeNode();
-// FAZER OS INSERTS EXATAMENTE NESSA ORDEM LA NA VIEW
-// POIS SE FIZER DIFERENTE A ARVORE FINAL PODE SER DIFERENTE
-// E AS VERIFICACOES DOS CONSOLE.LOG PODE CONFUNDIR UM POUCO
-// (PASSEI UM BOM TEMPO TENTANDO ENTENDER PQ OS CONSOLE.LOG TAVA DIFERENTE DO QUE EU VIA NA ARVORE,
-// E NA REAL FOI PORQUE LA NA VIEW EU INSERI EM OUTRA ORDEM)
-// btree = insert(btree, 8);
-// btree = insert(btree, 6);
-// btree = insert(btree, 1);
-// btree = insert(btree, 2);
-// btree = insert(btree, 3);
-// btree = insert(btree, 4);
-// btree = insert(btree, 13);
-// btree = insert(btree, 10);
-// btree = insert(btree, 5);
-// btree = insert(btree, 7);
-// btree = insert(btree, 9);
-// btree = insert(btree, 11);
-// btree = insert(btree, 12);
-// btree = insert(btree, 14);
-// btree = insert(btree, 15);
-// btree = insert(btree, 16);
-// btree = insert(btree, 17);
-// btree = insert(btree, 18);
-// btree = insert(btree, 19);
-// btree = insert(btree, 20);
-// btree = insert(btree, 21);
-// btree = insert(btree, 22);
-// btree = insert(btree, 23);
-// btree = insert(btree, 24);
-
 //teste
 function imprime(tree) {
     if (!isLeaf(tree)) {
@@ -510,28 +497,3 @@ function imprime(tree) {
     }
     console.log(tree);
 }
-
-// console.log("No inteiro");
-// console.log(searchNodeByKey(btree, 16));
-// console.log("sucessor");
-// console.log(sucessor(btree, 16));
-// console.log("predecessor");
-// console.log(predecessor(btree, 16)); 
-// console.log("Pai de um no");
-// console.log(getParent(btree, 16));
-// console.log("Adjacente esquerdo");
-// console.log(leftAdj(btree, searchNodeByKey(btree, 16)));
-// console.log("Adjacente direito");
-// console.log(rightAdj(btree, searchNodeByKey(btree, 16)));
-// console.log("Remove de uma folha sem desbalancear");
-// console.log("No folha antes da remocao:", searchNodeByKey(btree, 24));
-// btree = remove(btree, 23);
-// console.log("apos remocao", searchNodeByKey(btree, 24));
-// console.log(getParent(btree, 24));
-// console.log(getParent(btree, 20));
-// console.log(getParent(btree, 14));
-// console.log(getParent(btree, 10));
-
-
-
-

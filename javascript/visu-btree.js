@@ -38,7 +38,13 @@ function update(source) {
 
     nodeEnter.append("circle")
         .attr("r", 10)
-        .style("fill", "#fff");
+        .style("fill", "#fff")
+        .style("stroke",function (d) {            
+            if(d.draw){
+                return "red";
+            } 
+            return "steelblue";
+        });
 
     nodeEnter.append("text")
         .attr("y", function (d) {
